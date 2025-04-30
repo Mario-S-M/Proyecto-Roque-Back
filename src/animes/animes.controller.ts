@@ -5,7 +5,9 @@ import { UpdateAnimeDto } from './dto/update-anime.dto';
 
 @Controller('animes')
 export class AnimesController {
-  constructor(private readonly animesService: AnimesService) {}
+  constructor(
+    private readonly animesService: AnimesService
+  ) {}
 
   @Post()
   create(@Body() createAnimeDto: CreateAnimeDto) {
