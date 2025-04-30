@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm';
 import { CreateAnimeDto } from './dto/create-anime.dto';
@@ -8,27 +8,33 @@ import { Anime } from './entities/anime.entity';
 @Injectable()
 export class AnimesService {
 
-  constructor(
-    @InjectRepository(Anime) private readonly animeRepository: Repository<Anime>
-  ) {}
+ constructor(
+   @InjectRepository(Anime) private readonly animeRepository: Repository<Anime>
+ ) {}
 
-  create(createAnimeDto: CreateAnimeDto) {
-    return 'This action adds a new anime';
-  }
+ create(createAnimeDto: CreateAnimeDto) {
+   return this.animeRepository.save(createAnimeDto);
+ }
 
-  findAll() {
-    return this.animeRepository.find();
-  }
+ findAll() {
+   return this.animeRepository.find();
+ }
 
-  findOne(id: number) {
-    return `This action returns a #${id} anime`;
-  }
+ async findOne(id: number) {
+   const anime = await this.animeRepository.findOne({ where: { id } });
+   if (!anime) throw new NotFoundException('El Anime no existe');
+   return anime;
+ }
 
-  update(id: number, updateAnimeDto: UpdateAnimeDto) {
-    return `This action updates a #${id} anime`;
-  }
+ async update(id: number, updateAnimeDto: UpdateAnimeDto) {
+   const anime = await this.findOne(id);
+   const updatedAnime = this.animeRepository.merge(anime, updateAnimeDto);
+   return this.animeRepository.save(updatedAnime);
+ }
 
-  remove(id: number) {
-    return `This action removes a #${id} anime`;
-  }
+ async remove(id: number) {
+   const anime = await this.findOne(id);
+   await this.animeRepository.remove(anime);
+   return { ...anime, id };
+ }
 }
